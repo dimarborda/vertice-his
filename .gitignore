@@ -1,0 +1,17 @@
+# Secretos y entornos
+.env
+.env.*
+!.env.example
+infra/docker/.env
+# Vercel / herramientas
+.vercel
+.DS_Store
+# Go
+/backend/bin/
+*.test
+coverage.out
+# Angular / Node
+web/node_modules/
+web/dist/
+web/.angular/
+node_modules/
