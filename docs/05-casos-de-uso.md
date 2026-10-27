@@ -1,6 +1,6 @@
 # Vértice HIS · Casos de uso por etapas
 
-Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-decisiones.md](00-decisiones.md)
+Versión 1.1 · 2026-10-27 (agrega Lean Healthcare) · Fuente: [04-conceptual.md](04-conceptual.md), [00-decisiones.md](00-decisiones.md) y [09-lean-healthcare.md](09-lean-healthcare.md)
 
 ## Cómo leer este documento
 
@@ -27,10 +27,11 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 | APO | M9 · Apoyo diagnóstico | E5 |
 | FAC | M10 · Facturación, RIPS y glosas | E3 |
 | INT | M11 · Interoperabilidad (FHIR, RDA, HL7 v2, SMART, CDS Hooks) | E0, E1, E4, E5, E6 |
-| IAC | M12 · IA clínica nativa | E2, E3, E4, E6 |
+| IAC | M12 · IA clínica nativa (incluye IA de flujo) | E2, E3, E4, E6 |
 | POR | M13 · Portal del paciente | E6 |
 | ANA | M14 · Analítica y calidad | E6 |
 | RED | M15 · Red multisede | E7 |
+| FLU | M16 · Flujo y mejora continua (Lean Healthcare) | E1, E4, E5, E6 |
 
 ## Actores
 
@@ -42,7 +43,7 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 | Facturación y auditoría de cuentas | Contratos, cargos, FEV, RIPS, radicación, glosas | Modificar documentación clínica; borrar cargos o facturas (solo notas crédito/débito y ajustes) |
 | Farmacia | Valida prescripciones, dispensa, controla inventario y control especial | Cambiar una prescripción sin devolverla al prescriptor; dispensar sin validación |
 | Laboratorio / Imágenes | Recibe órdenes, publica resultados e informes | Ver la historia completa más allá de lo necesario para la orden; modificar un resultado publicado sin versión corregida |
-| Dirección / calidad | Consulta indicadores, aprueba protocolos, reglas de alerta y exportaciones | Ver datos identificados de pacientes en tableros agregados; editar registros clínicos |
+| Dirección / calidad | Consulta indicadores, aprueba protocolos, reglas de alerta y exportaciones; define estándares de flujo y lidera ciclos kaizen | Ver datos identificados de pacientes en tableros agregados; ver tiempos identificados de un profesional; editar registros clínicos |
 | Administrador TI / interoperabilidad | Configura organización, sedes, membresías, catálogos, conectores, apps SMART y agentes IA | Leer contenido clínico sin rol asistencial; borrar o alterar la bitácora; otorgarse a sí mismo roles clínicos sin un segundo administrador |
 | Paciente (portal) | Consulta su historia, citas, resultados y RDA; autoriza o revoca apps de terceros | Ver datos de otros pacientes; modificar su historia clínica (solo solicitar corrección) |
 | Sistema / motor de reglas | Ejecuta procesos automáticos versionados: outbox, reintentos, vencimientos, cargos automáticos | Actuar sin regla vigente; actuar sin dejar traza en bitácora |
@@ -57,12 +58,12 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 | Etapa | Propósito | Módulos | Edición | Duración | Criterio de salida |
 |---|---|---|---|---|---|
 | E0 | Cimientos | FND, INT | Todas | 3 semanas | Una persona entra con MFA, pertenece a una sede/servicio con un rol, toda lectura y escritura clínica queda en bitácora y existe un almacén FHIR versionado; la app está publicada en Vercel |
-| E1 | Ciclo ambulatorio mínimo + RDA (MVP) | PAC, ADM, HCE, ORD, INT | Esencial | 6 semanas | Un paciente real se registra, se agenda, se atiende, se le ordena, se cierra el encuentro y su RDA llega a la IHCE con acuse |
+| E1 | Ciclo ambulatorio mínimo + RDA (MVP) | PAC, ADM, HCE, ORD, INT, FLU | Esencial | 6 semanas | Un paciente real se registra, se agenda, se atiende, se le ordena, se cierra el encuentro y su RDA llega a la IHCE con acuse; sus hitos de flujo quedan medidos |
 | E2 | IA clínica nativa | IAC | Esencial / Hospital | 4 semanas | Un médico atiende con escriba ambiental, aprueba el borrador y queda `Provenance`; un agente vía MCP consulta solo lo autorizado |
 | E3 | Facturación, RIPS y glosas | FAC, IAC | Esencial | 5 semanas | Una atención de E1 se factura con FEV aceptada por la DIAN y RIPS validado, se radica y una glosa se responde dentro de Vértice |
-| E4 | Urgencias, hospitalización y farmacia | URG, ADM, HOS, HCE, FAR, INT, IAC | Hospital | 7 semanas | Un paciente pasa triage → observación → hospitalización con cama, eMAR y dispensación por dosis unitaria, egresa con epicrisis y su RDA de hospitalización se envía |
-| E5 | Apoyo diagnóstico, cirugía e integraciones HL7 v2 | APO, CIR, INT | Hospital | 6 semanas | Una orden de laboratorio viaja al LIS por HL7 v2 vía Vértice Edge y el resultado vuelve a la historia; una cirugía se programa, se verifica y se documenta |
-| E6 | Portal del paciente, analítica y ecosistema SMART | POR, ANA, INT, IAC | Esencial / Hospital | 5 semanas | Una app SMART de terceros se lanza desde la historia con scopes limitados, una alerta CDS Hooks aparece al ordenar, el paciente ve su RDA en el portal y dirección ve indicadores de calidad |
+| E4 | Urgencias, hospitalización y farmacia | URG, ADM, HOS, HCE, FAR, INT, IAC, FLU | Hospital | 7 semanas | Un paciente pasa triage → observación → hospitalización con cama, eMAR y dispensación por dosis unitaria, egresa con epicrisis y su RDA de hospitalización se envía |
+| E5 | Apoyo diagnóstico, cirugía e integraciones HL7 v2 | APO, CIR, INT, FLU | Hospital | 6 semanas | Una orden de laboratorio viaja al LIS por HL7 v2 vía Vértice Edge y el resultado vuelve a la historia; una cirugía se programa, se verifica y se documenta |
+| E6 | Portal del paciente, analítica, ecosistema SMART y mejora continua | POR, ANA, INT, IAC, FLU | Esencial / Hospital | 6 semanas | Una app SMART de terceros se lanza desde la historia con scopes limitados, una alerta CDS Hooks aparece al ordenar, el paciente ve su RDA en el portal, dirección ve indicadores de calidad y el mapa de flujo de valor, y un ciclo kaizen cierra con su comparación antes/después |
 | E7 | Red multisede | RED | Red | 4 semanas | Dos instituciones comparten índice maestro y un paciente referido de una a otra llega con su historia visible bajo consentimiento |
 
 ## E0 · Cimientos
@@ -183,7 +184,7 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 
 **Edición:** Esencial (MVP).
 
-**Criterio de salida:** en la URL de preview, un paciente real del piloto se registra con su EPS, recibe una cita, es atendido con nota firmada, diagnóstico y órdenes, se cierra el encuentro y su RDA de consulta externa llega a la IHCE con acuse visible en el monitor de envíos, sin hojas de cálculo paralelas.
+**Criterio de salida:** en la URL de preview, un paciente real del piloto se registra con su EPS, recibe una cita, es atendido con nota firmada, diagnóstico y órdenes, se cierra el encuentro y su RDA de consulta externa llega a la IHCE con acuse visible en el monitor de envíos, sin hojas de cálculo paralelas; los hitos de flujo de esa atención quedan registrados sin digitación extra.
 
 | ID | Caso de uso | Actor | Prioridad | Puntos | Estado |
 |---|---|---|---|---|---|
@@ -217,6 +218,8 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 | UC-INT-05 | Generar el RDA de paciente y de consulta externa | Sistema | 🟥 | 8 | ⬜ |
 | UC-INT-06 | Enviar el RDA a la IHCE con reintentos e idempotencia | Sistema | 🟥 | 5 | ⬜ |
 | UC-INT-07 | Monitorear los envíos de RDA | Administrador TI | 🟨 | 3 | ⬜ |
+| UC-FLU-01 | Registrar automáticamente los hitos de flujo de cada encuentro | Sistema | 🟥 | 5 | ⬜ |
+| UC-FLU-02 | Configurar estándares de tiempo por servicio | Dirección / calidad | 🟨 | 3 | ⬜ |
 
 ### UC-PAC-01 · Registrar paciente con la canasta mínima de datos
 - **Actor:** Admisiones.
@@ -388,6 +391,15 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 - **Alternativas:** error transitorio → reintento con espera exponencial; rechazo → "rechazado" con causa y alerta.
 - **Reglas de negocio:** cada envío lleva una clave de idempotencia; reintentar nunca duplica un RDA.
 - **Criterio de aceptación:** el RDA de la consulta del piloto aparece "aceptado" con acuse; forzar un reintento no genera un segundo registro.
+
+### UC-FLU-01 · Registrar automáticamente los hitos de flujo de cada encuentro
+- **Actor:** Sistema.
+- **Precondición:** el encuentro existe como `Encounter` FHIR y el outbox está activo.
+- **Disparador:** cualquier cambio de estado de `Encounter`, `ServiceRequest`, `Task` o nota firmada.
+- **Flujo principal:** 1) El proyector lee el evento del outbox. 2) Lo traduce a un hito (llegada, admisión, primer contacto, orden, resultado, cierre). 3) Lo guarda en `hitos_flujo` con la hora del recurso FHIR y su `id` de origen.
+- **Alternativas:** evento repetido → no duplica (idempotente); hito fuera de orden → se guarda y se marca para revisión de calidad del dato.
+- **Reglas de negocio:** ningún hito exige un clic adicional del personal; el paciente se guarda seudonimizado; los hitos se pueden reconstruir completos desde `recursos_fhir`.
+- **Criterio de aceptación:** en la consulta del piloto aparecen los hitos llegada → consulta → cierre con sus horas y el indicador "puerta a consulta" se calcula sin digitación extra.
 
 ## E2 · IA clínica nativa
 
@@ -570,7 +582,7 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 
 **Edición:** Hospital.
 
-**Criterio de salida:** un paciente de prueba pasa triage, observación y hospitalización con cama asignada en el mapa, recibe medicamentos con eMAR verificado por código y dispensados por dosis unitaria, egresa con epicrisis firmada y su RDA de urgencias y de hospitalización aparece "aceptado".
+**Criterio de salida:** un paciente de prueba pasa triage, observación y hospitalización con cama asignada en el mapa, recibe medicamentos con eMAR verificado por código y dispensados por dosis unitaria, egresa con epicrisis firmada y su RDA de urgencias y de hospitalización aparece "aceptado"; el tablero andon muestra su recorrido y alerta cuando supera un estándar.
 
 | ID | Caso de uso | Actor | Prioridad | Puntos | Estado |
 |---|---|---|---|---|---|
@@ -595,6 +607,9 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 | UC-FAR-04 | Controlar inventario por lote y vencimiento | Farmacia | 🟥 | 5 | ⬜ |
 | UC-FAR-05 | Controlar medicamentos de control especial | Farmacia | 🟨 | 5 | ⬜ |
 | UC-INT-08 | Generar y enviar el RDA de urgencias y hospitalización | Sistema | 🟥 | 5 | ⬜ |
+| UC-FLU-03 | Ver el tablero visual de flujo con alertas andon | Profesional clínico | 🟥 | 8 | ⬜ |
+| UC-FLU-04 | Planificar el alta desde el ingreso | Profesional clínico | 🟨 | 5 | ⬜ |
+| UC-FLU-05 | Coordinar el recambio de cama por solicitud (aseo y traslado) | Enfermería | 🟨 | 3 | ⬜ |
 
 ### UC-URG-01 · Clasificar al paciente en triage
 - **Actor:** Enfermería.
@@ -704,6 +719,15 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 - **Reglas de negocio:** reutiliza el motor de RDA de E1.
 - **Criterio de aceptación:** ambos RDA del paciente de prueba aparecen "aceptados".
 
+### UC-FLU-03 · Ver el tablero visual de flujo con alertas andon
+- **Actor:** Profesional clínico (jefe de urgencias o de piso), enfermería y dirección.
+- **Precondición:** hitos en tiempo real (UC-FLU-01) y estándares vigentes (UC-FLU-02).
+- **Disparador:** el usuario abre el tablero de su servicio.
+- **Flujo principal:** 1) Ve cada paciente en su paso actual con el tiempo transcurrido. 2) El semáforo cambia a ámbar o rojo según el estándar. 3) Una alerta roja notifica al responsable del paso, que registra la acción tomada.
+- **Alternativas:** sin estándar configurado → muestra tiempos sin semáforo; servicio saturado → resumen de cuellos de botella por paso.
+- **Reglas de negocio:** se muestra el proceso, no rankings de personas; las alertas atendidas guardan acción y hora.
+- **Criterio de aceptación:** un paciente de prueba que supera el estándar de puerta a médico aparece en rojo y su alerta queda registrada con la acción tomada.
+
 ## E5 · Apoyo diagnóstico, cirugía e integraciones HL7 v2
 
 **Edición:** Hospital.
@@ -725,6 +749,7 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 | UC-CIR-03 | Registrar el acto anestésico | Profesional clínico | 🟨 | 5 | ⬜ |
 | UC-CIR-04 | Documentar la descripción quirúrgica | Profesional clínico | 🟥 | 3 | ⬜ |
 | UC-CIR-05 | Registrar consumo de insumos ligado a cargos | Enfermería | 🟨 | 5 | ⬜ |
+| UC-FLU-06 | Medir recambio de quirófano y puntualidad del primer caso | Sistema | 🟨 | 3 | ⬜ |
 
 ### UC-INT-09 · Instalar y registrar Vértice Edge en la red del hospital
 - **Actor:** Administrador TI.
@@ -798,11 +823,11 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 - **Reglas de negocio:** el procedimiento firmado genera cargos.
 - **Criterio de aceptación:** el procedimiento aparece en la historia y su cargo en la cuenta.
 
-## E6 · Portal del paciente, analítica y ecosistema SMART
+## E6 · Portal del paciente, analítica, ecosistema SMART y mejora continua
 
 **Edición:** Esencial (portal) / Hospital (SMART, CDS Hooks, analítica).
 
-**Criterio de salida:** una app SMART de terceros se lanza desde la historia con scopes limitados; al prescribir aparece una tarjeta CDS Hooks; un paciente entra al portal, ve su RDA y revoca una app; dirección ve el tablero de indicadores de calidad.
+**Criterio de salida:** una app SMART de terceros se lanza desde la historia con scopes limitados; al prescribir aparece una tarjeta CDS Hooks; un paciente entra al portal, ve su RDA y revoca una app; dirección ve el tablero de indicadores de calidad y el mapa de flujo de valor de urgencias, y un ciclo kaizen de prueba cierra con su comparación antes/después.
 
 | ID | Caso de uso | Actor | Prioridad | Puntos | Estado |
 |---|---|---|---|---|---|
@@ -819,6 +844,10 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 | UC-ANA-01 | Consultar el tablero de indicadores de calidad | Dirección / calidad | 🟥 | 8 | ⬜ |
 | UC-ANA-02 | Consultar ocupación y oportunidad | Dirección / calidad | 🟨 | 5 | ⬜ |
 | UC-ANA-03 | Exportar datos desidentificados para investigación | Dirección / calidad | 🟨 | 5 | ⬜ |
+| UC-FLU-07 | Ver el mapa de flujo de valor del recorrido del paciente | Dirección / calidad | 🟥 | 8 | ⬜ |
+| UC-FLU-08 | Gestionar ciclos kaizen con A3 y comparación antes/después | Dirección / calidad | 🟥 | 5 | ⬜ |
+| UC-IAC-16 | Detectar cuellos de botella y proponer mejoras con IA | Agente IA | 🟨 | 8 | ⬜ |
+| UC-IAC-17 | Predecir llegadas a urgencias y altas para nivelar la carga | Agente IA | 🟩 | 5 | ⬜ |
 
 ### UC-INT-12 · Registrar y lanzar una app SMART on FHIR desde la historia
 - **Actor:** Administrador TI (registro) y profesional clínico (lanzamiento).
@@ -864,6 +893,24 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 - **Alternativas:** periodo sin datos → estado vacío explicado.
 - **Reglas de negocio:** tableros agregados sin datos identificados; cada indicador muestra su fórmula.
 - **Criterio de aceptación:** el indicador "% RDA enviado en < 24 h" coincide con el monitor de envíos.
+
+### UC-FLU-07 · Ver el mapa de flujo de valor del recorrido del paciente
+- **Actor:** Dirección / calidad.
+- **Precondición:** al menos un periodo con hitos completos (cobertura ≥ 80 %).
+- **Disparador:** comité de calidad o inicio de un ciclo kaizen.
+- **Flujo principal:** 1) Elige servicio, periodo y tipo de paciente. 2) El sistema dibuja los pasos con tiempo de proceso y de espera (mediana y percentil 90). 3) Señala el paso con mayor espera y permite abrir los casos desidentificados que lo componen.
+- **Alternativas:** cobertura < 80 % → muestra el mapa con advertencia y no lo deja usar como línea base.
+- **Reglas de negocio:** datos agregados y desidentificados; cada tiempo muestra su fórmula y cobertura.
+- **Criterio de aceptación:** el mapa de urgencias del piloto coincide con los tiempos del tablero para el mismo periodo.
+
+### UC-FLU-08 · Gestionar ciclos kaizen con A3 y comparación antes/después
+- **Actor:** Dirección / calidad (con el equipo del servicio).
+- **Precondición:** un indicador de flujo con línea base medida.
+- **Disparador:** se decide atacar un problema (p. ej. espera de cama).
+- **Flujo principal:** 1) Crea el A3: problema, indicador, línea base, causas, contramedidas, responsable y fecha. 2) Ejecuta las contramedidas. 3) Al cerrar, el sistema compara el indicador antes y después y el equipo decide estandarizar o ajustar.
+- **Alternativas:** causa sugerida por la IA (UC-IAC-16) → entra al A3 solo si una persona la acepta, con `Provenance`.
+- **Reglas de negocio:** la línea base y el resultado los calcula el sistema, no se digitan; estandarizar una mejora crea una versión nueva del estándar.
+- **Criterio de aceptación:** un ciclo de prueba muestra la línea base, el resultado posterior y la versión nueva del estándar.
 
 ## E7 · Red multisede
 
@@ -921,6 +968,7 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 | RG-09 | Las operaciones financieras se corrigen con ajustes y notas, nunca borrando. |
 | RG-10 | Los permisos salen de la membresía (sede, servicio, rol) y del consentimiento del paciente; lo más restrictivo gana. |
 | RG-11 | Datos de pacientes nunca se envían a un modelo de IA sin cero retención contractual; cuando la función no requiere identidad, se seudonimiza. |
+| RG-12 | Lean mide el proceso, no a la persona: los tableros de flujo agregan por servicio, turno y sede, nunca rankean individuos; cada profesional ve solo sus propios tiempos. Ningún hito exige digitación extra. |
 
 ## Criterios globales de aceptación
 
@@ -947,6 +995,8 @@ Versión 1 · 2026-10-27 · Fuente: [04-conceptual.md](04-conceptual.md) y [00-d
 | Vértice Edge fuera de línea | Administrador TI | Correo |
 | App o agente revocado | Administrador TI | Aplicación |
 | Referencia recibida | Institución receptora | Aplicación |
+| Paso de flujo supera el estándar (andon rojo) | Responsable del paso y jefe de servicio | Aplicación |
+| Ciclo kaizen por vencer o cerrado | Responsable del A3 y dirección / calidad | Aplicación |
 
 ## Decisiones pendientes del usuario
 

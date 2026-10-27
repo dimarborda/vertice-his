@@ -20,6 +20,12 @@ segundo como recurso FHIR versionado, consultable por API estándar, por el
 RDA y por la IA, con traza de quién lo escribió (humano o IA) y quién lo
 aprobó. TrakCare interopera *hacia afuera*; Vértice *es* el formato.
 
+**Segundo rasgo: Lean Healthcare nativo.** Como cada acto clínico deja su
+hora en FHIR, Vértice reconstruye sin digitación extra el recorrido real
+de cada paciente, mide esperas frente a estándares y sostiene ciclos de
+mejora continua (kaizen) con datos del propio sistema. Detalle en
+[09-lean-healthcare.md](09-lean-healthcare.md).
+
 ## 2. El ciclo que ordena la plataforma
 
 1. **Identificar** al paciente (índice maestro, cobertura/EPS, consentimientos).
@@ -28,7 +34,7 @@ aprobó. TrakCare interopera *hacia afuera*; Vértice *es* el formato.
 4. **Ejecutar** las órdenes (farmacia, laboratorio, imágenes, procedimientos, enfermería).
 5. **Cerrar el encuentro** (egreso, epicrisis) y **enviar el RDA** a la IHCE.
 6. **Facturar** (FEV + RIPS JSON), radicar y **gestionar glosas**.
-7. **Medir** (indicadores de calidad y de glosa) → ajustar agendas, protocolos y reglas de la IA… y el ciclo vuelve a empezar con el siguiente encuentro del paciente.
+7. **Medir y mejorar** (indicadores de calidad, de glosa y de flujo Lean) → ciclos kaizen que ajustan estándares, agendas, protocolos y reglas de la IA… y el ciclo vuelve a empezar con el siguiente encuentro del paciente.
 
 Objeto central: **el encuentro (`Encounter`)**. De su estado dependen las
 órdenes permitidas, la cama ocupada, los cargos facturables, el RDA que se
@@ -171,6 +177,16 @@ Pedir lo que el paciente necesita.
 - Referencia y contrarreferencia entre instituciones.
 - Analítica poblacional de la red.
 
+### M16 · Flujo y mejora continua · Lean Healthcare (FLU)
+Capa transversal: no tiene pantallas de registro propias; se alimenta de
+los actos clínicos de los demás módulos.
+- Hitos de flujo derivados automáticamente de FHIR y del outbox (sin digitación extra).
+- Estándares de tiempo versionados por servicio y tablero visual *andon* con semáforo.
+- Alta planificada desde el ingreso y recambio de cama por *pull* (aseo y traslado).
+- Mapa de flujo de valor automático y ciclos kaizen con A3 (línea base → resultado).
+- IA de flujo: cuellos de botella, causas probables y predicción de demanda (con `Provenance`).
+- Regla central: se mide el proceso, no a la persona.
+
 ## 6. Modelo de negocio
 
 Desde D5: SaaS por **edición** (*Esencial*, *Hospital*, *Red*) cobrado a la
@@ -182,9 +198,13 @@ llega después de E6.
 
 | Edición | Módulos | Cliente objetivo |
 |---|---|---|
-| Esencial | M0-M4, M10, M11, M12 (escriba y resumen), M13 | IPS ambulatorias y de baja/mediana complejidad |
-| Hospital | Esencial + M5-M9, M12 completo, M14 | Hospitales de mediana/alta complejidad (piloto HUV) |
-| Red | Hospital + M15 | Redes públicas, secretarías de salud, grupos privados |
+| Esencial | M0-M4, M10, M11, M12 (escriba y resumen), M13, M16 (hitos y estándares) | IPS ambulatorias y de baja/mediana complejidad |
+| Hospital | Esencial + M5-M9, M12 completo, M14, M16 completo | Hospitales de mediana/alta complejidad (piloto HUV) |
+| Red | Hospital + M15 (incluye comparación de flujo entre instituciones) | Redes públicas, secretarías de salud, grupos privados |
+
+Add-on de servicios: acompañamiento Lean en la implantación (formación,
+rondas al sitio de trabajo, ciclos kaizen) con línea base y resultado
+medidos por Vértice.
 
 ## 7. Modelo de datos
 
@@ -220,6 +240,9 @@ verdad clínica** y el RDA, la API y la IA leen exactamente lo que se firmó.
 | mensajes_hl7v2 | Bandeja de entrada/salida HL7 v2 | tipo (ADT/ORM/ORU), estado, reintentos, conector | ordenes, recursos_fhir |
 | eventos_salida | Outbox transaccional | tipo de evento, recurso, estado de entrega | suscripciones, rda_envios |
 | bitacora | Auditoría (`AuditEvent`) | actor (humano/sistema/IA), acción, entidad, antes/después, motivo, IP | — (solo inserción) |
+| hitos_flujo | Proyección Lean de cada hito de una atención | encuentro, paciente (seudónimo), hito, ocurrido_en, sede, servicio, recurso FHIR de origen | encuentros, recursos_fhir |
+| estandares_flujo | Metas de tiempo por servicio | indicador, servicio, meta, umbrales ámbar/rojo, versión, vigencia | servicios |
+| mejoras_kaizen | Ciclo de mejora A3 | problema, indicador, línea base, causas, contramedidas, responsable, resultado, estado | estandares_flujo, `Provenance` |
 
 Reglas de modelo:
 - Lo firmado no se edita: nueva versión + nota aclaratoria; `recursos_fhir` conserva todas las versiones.
@@ -250,12 +273,12 @@ Variante de stack (detalle, estructura y despliegue en
 | Fase | Alcance | Módulos | Duración |
 |---|---|---|---|
 | E0 | Cimientos: identidad, sedes, roles, bitácora, almacén FHIR, despliegue | FND, INT (base) | 3 semanas |
-| E1 | Ciclo ambulatorio mínimo + RDA (MVP *Esencial*) | PAC, ADM, HCE, ORD, INT | 6 semanas |
+| E1 | Ciclo ambulatorio mínimo + RDA (MVP *Esencial*) + captura de hitos de flujo | PAC, ADM, HCE, ORD, INT, FLU | 6 semanas |
 | E2 | IA clínica nativa en la consulta | IAC | 4 semanas |
 | E3 | Facturación, RIPS y glosas | FAC | 5 semanas |
-| E4 | Urgencias, hospitalización y farmacia (edición *Hospital*) | URG, HOS, FAR | 7 semanas |
-| E5 | Apoyo diagnóstico, cirugía e integraciones HL7 v2 | APO, CIR, INT | 6 semanas |
-| E6 | Portal del paciente, analítica y ecosistema SMART | POR, ANA, INT | 5 semanas |
+| E4 | Urgencias, hospitalización y farmacia (edición *Hospital*) + tablero *andon* y alta planificada | URG, HOS, FAR, FLU | 7 semanas |
+| E5 | Apoyo diagnóstico, cirugía e integraciones HL7 v2 | APO, CIR, INT, FLU | 6 semanas |
+| E6 | Portal del paciente, analítica, ecosistema SMART y mejora continua (mapa de flujo, kaizen, IA de flujo) | POR, ANA, INT, FLU, IAC | 6 semanas |
 | E7 | Red multisede (edición *Red*) | RED | 4 semanas |
 
 Por qué este orden: la interoperabilidad no es una etapa, es el
@@ -265,7 +288,9 @@ operar y antes de crecer en módulos, porque es la prioridad diferencial.
 La facturación (mueve dinero) llega cuando la documentación es confiable,
 porque los RIPS y la FEV se derivan de ella. Hospitalización y cirugía
 reutilizan todo lo anterior. La red llega cuando una institución opera
-estable.
+estable. Lean no es una etapa: la captura de hitos nace en E1 para tener
+línea base desde el primer encuentro del piloto, y las herramientas de
+mejora llegan cuando hay datos suficientes (E4-E6).
 
 ## 10. Cumplimiento
 

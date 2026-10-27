@@ -21,6 +21,7 @@ Los documentos de `docs/` mandan sobre cualquier suposición:
 | `docs/06-lecciones-aprendidas.md` | Reglas aprendidas de las auditorías (se crea con la primera) |
 | `docs/07-variante-stack.md` | Arquitectura Go + Angular + Vercel Services (manda sobre "stack") |
 | `docs/08-interoperabilidad-e-ia.md` | FHIR, HL7 v2, RDA, SMART, CDS Hooks, IA y servidor MCP |
+| `docs/09-lean-healthcare.md` | Capa Lean (M16 · FLU): hitos de flujo, andon, kaizen, reglas |
 | `docs/auditoria/` | Informes de auditoría por fecha |
 
 Al terminar un caso de uso, actualiza su estado en `docs/05-casos-de-uso.md`.
@@ -36,6 +37,7 @@ Al terminar un caso de uso, actualiza su estado en `docs/05-casos-de-uso.md`.
 - FHIR R4 es la verdad clínica: nada clínico se guarda fuera de `recursos_fhir`.
 - Lo firmado no se edita (nueva versión + nota aclaratoria). `bitacora` y `recursos_fhir` sin `update`/`delete`.
 - La IA propone; un profesional identificado aprueba. Toda salida IA genera `Provenance`.
+- Lean mide el proceso, no a la persona; ningún hito de flujo exige digitación extra (RG-12).
 - Migraciones solo SQL en `db/migrations/`; RLS activado en todas las tablas en la misma migración.
 - Nunca secretos en el código ni en `docs/`; nunca datos reales de pacientes fuera de producción (usar Synthea).
 - `go vet ./... && go test ./...` y `ng build` sin errores antes de cada push.

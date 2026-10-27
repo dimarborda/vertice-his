@@ -91,6 +91,11 @@ Variables CSS en `src/styles.css` (`--primary`, `--accent`, `--radius`,
 | Portal: inicio, citas, resultados, accesos | Paciente | Tarjetas móviles | POR | E6 |
 | Registro de apps SMART | TI | Tabla + formulario | INT | E6 |
 | Tableros de indicadores | Dirección | Tablero de KPIs | ANA | E6 |
+| Estándares de flujo | Dirección | Tabla versionada con umbrales | FLU | E1 |
+| Tablero de flujo *andon* | Clínico, Enfermería, Dirección | Carriles por paso con semáforo y tiempo transcurrido | FLU | E4 |
+| Plan de alta y recambio de cama | Clínico, Enfermería | Lista por paciente con fecha estimada y pendientes | FLU | E4 |
+| Mapa de flujo de valor | Dirección | Diagrama de pasos con proceso/espera (mediana y p90) | FLU | E6 |
+| Tablero kaizen (A3) | Dirección, equipos de servicio | Kanban de ciclos + ficha A3 con antes/después | FLU, IAC | E6 |
 | Referencia y contrarreferencia | Clínico | Bandeja de entrada/salida | RED | E7 |
 
 ## 5. Tono de los textos

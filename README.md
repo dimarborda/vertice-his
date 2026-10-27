@@ -22,6 +22,7 @@ suites cerradas, caras e integradas a la medida.
 | Los HIS nacionales más usados (Hosvital, Servinte, PANACEA) nacieron antes de FHIR. | Cada integración (laboratorio, imágenes, EPS, MinSalud) es un desarrollo a la medida. |
 | El referente con interoperabilidad nativa (TrakCare de InterSystems) y el más completo (SAP; según el equipo, el que usa la Fundación Valle del Lili) son caros, extranjeros y lentos de implantar. | Solo las instituciones grandes pueden pagarlos. SAP IS-H tiene soporte estándar hasta 2027 y extendido hasta 2030, sin sucesor de SAP: quienes lo usan buscarán reemplazo. |
 | La norma ya obliga a interoperar: Ley 2015 de 2020, Res. 866 de 2021 y **Res. 1888 de 2025 (Resumen Digital de Atención, RDA)**. | Las IPS tienen que enviar el RDA a la plataforma del Ministerio con sistemas que no fueron hechos para eso. |
+| Las esperas (urgencias, camas, resultados, quirófanos) se miden con cronómetro y planillas, si es que se miden. | La mejora continua depende de consultores y se diluye cuando se van. |
 | RIPS, factura electrónica y glosas se concilian a mano. | Pérdida de ingresos por glosas evitables. |
 | La documentación clínica consume buena parte de la consulta, y no hay IA en el flujo. | Menos tiempo con el paciente y notas incompletas que después se glosan. |
 
@@ -30,8 +31,9 @@ suites cerradas, caras e integradas a la medida.
 1. **FHIR como formato nativo, no como adaptador.** Todo lo clínico existe desde el primer momento como recurso HL7 FHIR R4 versionado. El RDA, la API pública, las apps de terceros y la IA leen lo mismo que se firmó.
 2. **El ciclo colombiano completo.** Identificar → admitir → atender → ejecutar → cerrar y enviar el RDA → facturar (FEV + RIPS JSON) → gestionar glosas → medir.
 3. **IA integrada y gobernada.** Escriba ambiental que pasa la consulta a nota, resumen del paciente, borrador de epicrisis, codificación CIE-10/CUPS, revisión antes de facturar, alertas CDS Hooks y un servidor **MCP** para que agentes autorizados consulten la historia con los mismos permisos que una persona. **La IA propone y un profesional aprueba**, y cada sugerencia queda registrada con su procedencia (`Provenance`).
-4. **Equipos heredados conectados sin abrir el hospital a internet.** El conector *Vértice Edge*, instalado en la red del hospital, traduce HL7 v2 a FHIR y lo envía de forma segura.
-5. **Tres ediciones sobre el mismo núcleo**:
+4. **Lean Healthcare nativo.** Como cada acto clínico deja su hora en FHIR, Vértice reconstruye solo el recorrido de cada paciente, sin que nadie digite nada extra. Con eso mide las esperas frente a estándares en un tablero visual (*andon*), dibuja el mapa de flujo de valor y sostiene ciclos de mejora continua (kaizen) con un antes y un después medidos. Mide el proceso, no a la persona. La IA señala cuellos de botella y predice la demanda.
+5. **Equipos heredados conectados sin abrir el hospital a internet.** El conector *Vértice Edge*, instalado en la red del hospital, traduce HL7 v2 a FHIR y lo envía de forma segura.
+6. **Tres ediciones sobre el mismo núcleo**:
 
 | Edición | Para quién | Incluye |
 |---|---|---|
@@ -57,20 +59,22 @@ textos, interfaces ni código.
 | Etapa | Qué entrega | Duración |
 |---|---|---|
 | E0 Cimientos | Acceso con MFA, sedes y roles, bitácora, almacén FHIR, app publicada | 3 sem |
-| E1 Ciclo ambulatorio (MVP) | Paciente → cita → consulta → órdenes → **RDA enviado** | 6 sem |
+| E1 Ciclo ambulatorio (MVP) | Paciente → cita → consulta → órdenes → **RDA enviado**; hitos de flujo medidos desde el día 1 | 6 sem |
 | E2 IA clínica | Escriba, resumen, codificación, servidor MCP, bandeja de aprobación | 4 sem |
 | E3 Facturación | Cargos, FEV, RIPS JSON, glosas y revisión con IA antes de radicar | 5 sem |
-| E4 Hospital | Urgencias, camas, eMAR, farmacia | 7 sem |
+| E4 Hospital | Urgencias, camas, eMAR, farmacia, tablero *andon* y alta planificada | 7 sem |
 | E5 Apoyo y cirugía | Laboratorio, imágenes, quirófanos, conector HL7 v2 | 6 sem |
-| E6 Ecosistema | Portal del paciente, apps SMART, CDS Hooks, analítica | 5 sem |
+| E6 Ecosistema y mejora continua | Portal del paciente, apps SMART, CDS Hooks, analítica, mapa de flujo de valor, kaizen e IA de flujo | 6 sem |
 | E7 Red | Varias sedes o instituciones | 4 sem |
 
-Unas **40 semanas** en total: **121 casos de uso y 572 puntos**, validados con el script de la skill. La edición *Esencial* se puede pilotar al
+Unas **41 semanas** en total: **131 casos de uso y 625 puntos**, validados con el script de la skill. La edición *Esencial* se puede pilotar al
 cerrar E3 (~18 semanas).
 
 **Indicadores de éxito:** al menos el 95 % de las atenciones con RDA
 enviado en menos de 24 h · 30 % menos glosas por inconsistencias en el
-primer año · 25 % menos tiempo de documentación por consulta.
+primer año · 25 % menos tiempo de documentación por consulta · Lean (meta a
+validar en el piloto): 20 % menos espera de puerta a médico en urgencias y
+15 % más altas antes del mediodía a los 6 meses de E4.
 
 ## Arquitectura en breve
 
@@ -107,10 +111,11 @@ Las cinco decisiones de diseño (D1-D5) quedaron **ratificadas el 27 de octubre 
 | 01 | [Referente conceptual](docs/01-referente-conceptual.md) | Análisis de TrakCare y matriz comparativa de los cinco referentes |
 | 02 | [Casos de uso del referente](docs/02-referente-casos-de-uso.md) | Catálogo funcional, integraciones y frentes de complejidad |
 | 03 | [Diseño visual](docs/03-diseno-visual.md) | Tokens, navegación por rol e inventario de pantallas |
-| 04 | [Documento conceptual](docs/04-conceptual.md) | Ciclo, roles, 16 módulos, modelo de datos, arquitectura, fases y cumplimiento |
+| 04 | [Documento conceptual](docs/04-conceptual.md) | Ciclo, roles, 17 módulos, modelo de datos, arquitectura, fases y cumplimiento |
 | 05 | [Casos de uso por etapas](docs/05-casos-de-uso.md) | Backlog E0–E7 con prioridades, puntos y criterios de salida |
 | 07 | [Variante de stack](docs/07-variante-stack.md) | Go + Angular + Vercel Services: servicios, repositorio, `vercel.json`, límites |
 | 08 | [Interoperabilidad e IA](docs/08-interoperabilidad-e-ia.md) | FHIR, RDA, HL7 v2, SMART, CDS Hooks, servidor MCP y salvaguardas de IA |
+| 09 | [Lean Healthcare](docs/09-lean-healthcare.md) | Medición automática del flujo, desperdicios, *andon*, kaizen, indicadores y riesgos |
 | — | [CLAUDE.md](CLAUDE.md) | Reglas para el agente que construirá el proyecto |
 
 *El documento 06 (lecciones aprendidas) se crea con la primera auditoría

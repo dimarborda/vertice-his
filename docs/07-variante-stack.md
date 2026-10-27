@@ -13,7 +13,7 @@ Versión 1 · 2026-10-27
 
 | Necesidad del HIS | Por qué Go + Angular la cubre mejor que Next.js solo |
 |---|---|
-| Dominio grande y regulado (16 módulos) con reglas de negocio densas | Go con diseño DDD por servicio: tipos estrictos, binarios pequeños, concurrencia para colas de mensajería clínica. |
+| Dominio grande y regulado (17 módulos) con reglas de negocio densas | Go con diseño DDD por servicio: tipos estrictos, binarios pequeños, concurrencia para colas de mensajería clínica. |
 | Interoperabilidad (FHIR, HL7 v2, RDA) y procesos de larga vida | Servicios Go dedicados (`fhir`, `interop`) y un **binario Edge** que corre dentro de la red del hospital: el mismo lenguaje en la nube y on-premise. |
 | Aplicación de escritorio densa, de uso diario de 8-12 horas | Angular: formularios reactivos tipados, signals, CDK (tablas virtuales, atajos, accesibilidad), estructura opinada para equipos grandes. |
 | Equipo y conocimiento existente | Mismo stack que `n4na_digital`: scripts, Dockerfiles y reglas de despliegue reutilizables. |
@@ -43,11 +43,11 @@ Versión 1 · 2026-10-27
 |---|---|---|---|
 | `auth` | `/auth`, `/oauth2`, `/.well-known/smart-configuration` | FND | Sesión sobre Supabase Auth (OIDC + MFA), membresías por sede/servicio, **servidor OAuth 2.0 / SMART on FHIR** (scopes, *launch context*), romper el vidrio. |
 | `fhir` | `/fhir/r4` | INT | Servidor FHIR R4: CRUD, búsqueda, `_history`, `$everything`, `Bundle` transaccional, validación contra perfiles colombianos. Escribe en `recursos_fhir` + índices de búsqueda. |
-| `clinico` | `/pacientes`, `/agenda`, `/encuentros`, `/notas`, `/ordenes`, `/urgencias`, `/camas`, `/cirugia` | PAC, ADM, HCE, ORD, URG, HOS, CIR | Flujos de trabajo clínicos. Persiste lo clínico **a través del paquete de dominio FHIR compartido** (no duplica la verdad) y lo operativo en tablas propias. SSE para tableros en tiempo real. |
+| `clinico` | `/pacientes`, `/agenda`, `/encuentros`, `/notas`, `/ordenes`, `/urgencias`, `/camas`, `/cirugia`, `/flujo` | PAC, ADM, HCE, ORD, URG, HOS, CIR, FLU | Flujos de trabajo clínicos y proyección Lean de hitos de flujo desde el outbox (`hitos_flujo`, tablero *andon*, kaizen). Persiste lo clínico **a través del paquete de dominio FHIR compartido** (no duplica la verdad) y lo operativo en tablas propias. SSE para tableros en tiempo real. |
 | `apoyo` | `/farmacia`, `/laboratorio`, `/imagenes` | FAR, APO | Validación farmacéutica, dispensación, inventario, resultados e informes. |
 | `facturacion` | `/cuentas`, `/facturas`, `/rips`, `/glosas` | FAC | Cargos, tarifarios, FEV vía proveedor tecnológico, RIPS JSON, glosas. |
 | `interop` | `/interop`, `/cds-services`, `/edge` | INT | RDA → IHCE, suscripciones FHIR, CDS Hooks, relé del conector Edge, outbox de eventos. |
-| `ai` | `/ai`, `/mcp` | IAC | Escriba, resúmenes, codificación, revisión pre-factura, **servidor MCP** (Streamable HTTP) sobre FHIR con permisos SMART; registra `Provenance`. |
+| `ai` | `/ai`, `/mcp` | IAC | Escriba, resúmenes, codificación, revisión pre-factura, IA de flujo (cuellos de botella, predicción de demanda), **servidor MCP** (Streamable HTTP) sobre FHIR con permisos SMART; registra `Provenance`. |
 | `edge` *(fuera de Vercel)* | — | INT | Binario Go instalado en la red del hospital: escucha **MLLP** (HL7 v2), traduce a FHIR/JSON y lo envía por HTTPS a `interop`; cola local persistente si cae internet. |
 
 Por qué `edge` existe: las funciones de Vercel atienden HTTP(S)/WebSockets,

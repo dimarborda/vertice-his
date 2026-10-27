@@ -37,6 +37,14 @@ suites cerradas, costosas e integradas por interfaces punto a punto.
 referentes nacionales nacieron antes de FHIR; el único referente con FHIR
 nativo (TrakCare) es caro y extranjero. El hueco es un HIS **FHIR-first,
 nacional y con IA en el flujo**, vendible por ediciones.
+
+**Ampliación (2026-10-27, aprobada por el dueño):** se incorpora **Lean
+Healthcare nativo** como capa transversal (módulo M16 · FLU). Vértice
+deriva de FHIR los hitos de flujo de cada atención, mide esperas frente a
+estándares, muestra tableros *andon* y sostiene ciclos kaizen, midiendo
+el proceso y no a la persona. Se añade un resultado medible (d): espera de
+puerta a médico en urgencias y altas antes del mediodía en el piloto.
+Detalle en [09-lean-healthcare.md](09-lean-healthcare.md).
 **Estado:** aprobada — ratificada por el dueño el 2026-10-27
 
 ## D2 · Basado en qué (referente funcional)
